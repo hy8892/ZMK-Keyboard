@@ -1,12 +1,10 @@
 #!/bin/bash
-# 用法: ./setup.sh
+# 用法: bash setup.sh
 # 功能: 一键配置 ZMK 编译环境（克隆源码 + 安装工具链 + 设置快捷命令）
 
 set -e
 
-# 获取当前脚本所在目录（即 ZMK 配置仓库根目录）
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_NAME="$(basename "$SCRIPT_DIR")"
 
 echo "=========================================="
 echo "🚀 开始配置 ZMK 编译环境"
@@ -31,7 +29,13 @@ else
     echo "✅ ZMK 源码克隆完成"
 fi
 
-# 3. 初始化 west 工作区
+# 3. 安装 west
+echo ""
+echo "📦 安装 west..."
+pip install west
+echo "✅ west 安装完成"
+
+# 4. 初始化 west 工作区
 echo ""
 echo "📦 初始化 west 工作区..."
 cd /workspaces/zmk
@@ -42,45 +46,45 @@ else
 fi
 echo "✅ west 工作区初始化完成"
 
-# 4. 更新 west 模块
+# 5. 更新 west 模块
 echo ""
-echo "📦 更新 west 模块（下载 Zephyr 和依赖，可能需要 3-5 分钟）..."
+echo "📦 更新 west 模块（可能需要 3-5 分钟）..."
 west update
 echo "✅ west 更新完成"
 
-# 5. 安装 Python 依赖
+# 6. 安装 Python 依赖
 echo ""
 echo "📦 安装 Python 依赖..."
 pip install -r zephyr/scripts/requirements.txt
-pip install -r app/requirements.txt
-# ZMK Studio 需要额外依赖
+if [ -f "app/requirements.txt" ]; then
+    pip install -r app/requirements.txt
+else
+    echo "⚠️ app/requirements.txt 不存在，跳过"
+fi
 pip install protobuf grpcio-tools pyelftools
 echo "✅ Python 依赖安装完成"
 
-# 6. 安装 Zephyr SDK
+# 7. 安装 Zephyr SDK
 echo ""
 echo "📦 安装 Zephyr SDK（可能需要 5-10 分钟）..."
 west sdk install
 echo "✅ Zephyr SDK 安装完成"
 
-# 7. 设置快捷命令
+# 8. 给 build.sh 添加可执行权限
+chmod +x "$SCRIPT_DIR/build.sh" 2>/dev/null || true
+
+# 9. 设置快捷命令
 echo ""
 echo "📦 设置快捷命令..."
-
-# 删除旧的 alias（如果有）
 sed -i '/alias build=/d' ~/.bashrc 2>/dev/null
 sed -i '/alias push=/d' ~/.bashrc 2>/dev/null
 sed -i '/export PATH=.*ZMK-Keyboard/d' ~/.bashrc 2>/dev/null
 
-# 写入新的 alias
 echo "alias build=\"$SCRIPT_DIR/build.sh\"" >> ~/.bashrc
 echo "alias push=\"cd $SCRIPT_DIR && git add . && git commit -m \\\"Update \$(date +%Y-%m-%d)\\\" && git push origin main && rm -rf /workspaces/zmk/app/build_* && rm -rf /home/codespace/.cache/zephyr 2>/dev/null\"" >> ~/.bashrc
 echo "export PATH=\$PATH:$SCRIPT_DIR" >> ~/.bashrc
 
 echo "✅ 快捷命令已添加到 ~/.bashrc"
-
-# 重新加载配置
-source ~/.bashrc
 
 echo ""
 echo "=========================================="
@@ -94,7 +98,8 @@ echo "  build 键盘名     - 编译固件（如 build x35n）"
 echo "  build.sh 键盘名  - 同上（PATH 方式）"
 echo "  push             - 提交并推送到 GitHub，同时自动清理缓存"
 echo ""
+echo "⚠️ 请手动执行: source ~/.bashrc"
+echo "然后可以使用: build 键盘名"
+echo ""
 echo "固件自动保存到: $SCRIPT_DIR/键盘名/键盘名.uf2"
 echo "=========================================="
-
-# chmod +x /workspaces/ZMK-Keyboard/setup.sh
