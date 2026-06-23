@@ -1,4 +1,3 @@
-cat > /workspaces/ZMK-Keyboard/setup.sh << 'EOF'
 #!/bin/bash
 # 用法: ./setup.sh
 # 功能: 一键配置 ZMK 编译环境（克隆源码 + 安装工具链 + 设置快捷命令）
@@ -97,6 +96,5 @@ echo "  push             - 提交并推送到 GitHub，同时自动清理缓存"
 echo ""
 echo "固件自动保存到: $SCRIPT_DIR/键盘名/键盘名.uf2"
 echo "=========================================="
-EOF
 
-chmod +x /workspaces/ZMK-Keyboard/setup.sh
+# chmod +x /workspaces/ZMK-Keyboard/setup.sh
