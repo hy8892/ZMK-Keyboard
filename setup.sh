@@ -64,26 +64,21 @@ echo "📦 安装 Zephyr SDK（可能需要 5-10 分钟）..."
 west sdk install
 echo "✅ Zephyr SDK 安装完成"
 
-# 7. 设置快捷命令（双重保障）
+# 7. 设置快捷命令
 echo ""
 echo "📦 设置快捷命令..."
 
-# 方法1：alias
-if ! grep -q "alias build=" ~/.bashrc; then
-    echo "alias build=\"$SCRIPT_DIR/build.sh\"" >> ~/.bashrc
-    echo "alias push=\"cd $SCRIPT_DIR && git add . && git commit -m \\\"Update \$(date +%Y-%m-%d)\\\" && git push origin main && rm -rf /workspaces/zmk/app/build_* && rm -rf /home/codespace/.cache/zephyr 2>/dev/null\"" >> ~/.bashrc
-    echo "✅ alias 已添加到 ~/.bashrc"
-else
-    echo "⚠️ alias 已存在，跳过"
-fi
+# 删除旧的 alias（如果有）
+sed -i '/alias build=/d' ~/.bashrc 2>/dev/null
+sed -i '/alias push=/d' ~/.bashrc 2>/dev/null
+sed -i '/export PATH=.*ZMK-Keyboard/d' ~/.bashrc 2>/dev/null
 
-# 方法2：添加到 PATH（让 build.sh 可以在任何目录直接运行）
-if ! grep -q "export PATH=.*$SCRIPT_DIR" ~/.bashrc; then
-    echo "export PATH=\$PATH:$SCRIPT_DIR" >> ~/.bashrc
-    echo "✅ PATH 已添加到 ~/.bashrc"
-else
-    echo "⚠️ PATH 已存在，跳过"
-fi
+# 写入新的 alias
+echo "alias build=\"$SCRIPT_DIR/build.sh\"" >> ~/.bashrc
+echo "alias push=\"cd $SCRIPT_DIR && git add . && git commit -m \\\"Update \$(date +%Y-%m-%d)\\\" && git push origin main && rm -rf /workspaces/zmk/app/build_* && rm -rf /home/codespace/.cache/zephyr 2>/dev/null\"" >> ~/.bashrc
+echo "export PATH=\$PATH:$SCRIPT_DIR" >> ~/.bashrc
+
+echo "✅ 快捷命令已添加到 ~/.bashrc"
 
 # 重新加载配置
 source ~/.bashrc
@@ -103,4 +98,5 @@ echo ""
 echo "固件自动保存到: $SCRIPT_DIR/键盘名/键盘名.uf2"
 echo "=========================================="
 EOF
+
 chmod +x /workspaces/ZMK-Keyboard/setup.sh
